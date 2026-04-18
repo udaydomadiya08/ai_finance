@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import DataUploader from './components/DataUploader';
 import ComparisonView from './components/ComparisonView';
+import ReportPreview from './components/ReportPreview';
 
 function App() {
   const { user, currentCompany, setCurrentCompany, companies, view } = useStore();
@@ -18,6 +19,7 @@ function App() {
       case 'dashboard': return <Dashboard />;
       case 'comparison': return <ComparisonView />;
       case 'upload': return <DataUploader />;
+      case 'report': return <ReportPreview />;
       default: return <Dashboard />;
     }
   };

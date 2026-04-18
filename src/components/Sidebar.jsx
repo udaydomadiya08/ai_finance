@@ -9,6 +9,7 @@ const Sidebar = () => {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Overview' },
     { id: 'upload', icon: FileUp, label: 'Upload Data' },
     { id: 'comparison', icon: BarChart3, label: 'Comparison' },
+    { id: 'report', icon: ShieldAlert, label: 'Forensic Report' },
   ];
 
   return (

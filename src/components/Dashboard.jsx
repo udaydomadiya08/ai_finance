@@ -11,6 +11,10 @@ import { generatePDFReport } from '../utils/reportGenerator';
 import { TrendingUp, Wallet, Activity, Zap, FileDown, Loader2, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import AnalysisTable from './AnalysisTable';
+import BenchmarkChart from './BenchmarkChart';
+import InsightGenerator from './InsightGenerator';
+
 const Dashboard = () => {
   const { currentCompany } = useStore();
   const [isExporting, setIsExporting] = useState(false);
@@ -37,33 +41,13 @@ const Dashboard = () => {
   if (!analysis) return null;
 
   const { ratios, fraud } = analysis;
-  const benchmark = industryBenchmarks[currentCompany.type] || industryBenchmarks.technology;
-
-  const BenchmarkItem = ({ label, value, target, isLowerBetter = false }) => {
-    const diff = value - target;
-    const isGood = isLowerBetter ? diff <= 0 : diff >= 0;
-    return (
-      <div style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{label}</span>
-          <span style={{ fontSize: '13px', fontWeight: '700', color: isGood ? 'var(--success-green)' : 'var(--danger-red)' }}>
-            {value.toFixed(1)}{label.includes('Margin') ? '%' : ''}
-          </span>
-        </div>
-        <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ width: `${Math.min(100, (value/target)*50)}%`, height: '100%', background: isGood ? 'var(--success-green)' : 'var(--danger-red)', opacity: 0.6 }} />
-        </div>
-        <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px' }}>Sector Avg: {target.toFixed(1)}</div>
-      </div>
-    );
-  };
 
   return (
     <div className="main-content" id="dashboard-main">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <h1 style={{ marginBottom: '4px' }}>Financial Intelligence</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Advanced Forensic Audit: {currentCompany.name}</p>
+          <h1 style={{ marginBottom: '4px', letterSpacing: '-0.5px' }}>Financial Intelligence</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Advanced Forensic Audit: <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{currentCompany.name}</span></p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
            <button 
@@ -125,17 +109,22 @@ const Dashboard = () => {
             />
           </div>
 
-          <div className="glass-card" style={{ flex: 1, minHeight: '400px' }}>
-            <h3 style={{ marginBottom: '20px' }}>Forensic Trend Analysis</h3>
-            <div className="chart-container">
-              <TrendChart data={currentCompany.statements} />
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+            <div className="glass-card" style={{ flex: 1 }}>
+              <h3 style={{ marginBottom: '20px' }}>Forensic Trend Analysis</h3>
+              <div className="chart-container">
+                <TrendChart data={currentCompany.statements} />
+              </div>
             </div>
+            <InsightGenerator ratios={ratios} fraud={fraud} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
              <RiskIndicator score={fraud.riskScore} level={fraud.riskLevel} />
              <RedFlagsPanel flags={fraud.flags} />
           </div>
+
+          <AnalysisTable />
         </div>
 
         <AnimatePresence>
@@ -146,15 +135,7 @@ const Dashboard = () => {
               exit={{ opacity: 0, x: 20 }}
               style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
             >
-              <div className="glass-card">
-                <h3 style={{ fontSize: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Zap size={18} color="var(--accent-blue)" /> Sector Benchmarks
-                </h3>
-                <BenchmarkItem label="Net Margin" value={ratios.profitability.netMargin} target={benchmark.netMargin} />
-                <BenchmarkItem label="Current Ratio" value={ratios.liquidity.currentRatio} target={benchmark.currentRatio} />
-                <BenchmarkItem label="Asset Turnover" value={ratios.efficiency.assetTurnover} target={benchmark.assetTurnover} />
-                <BenchmarkItem label="Debt-to-Equity" value={ratios.leverage.debtToEquity} target={benchmark.debtToEquity} isLowerBetter />
-              </div>
+              <BenchmarkChart ratios={ratios} />
 
               <div className="glass-card" style={{ background: 'rgba(88, 166, 255, 0.05)', borderColor: 'rgba(88, 166, 255, 0.2)' }}>
                 <h3 style={{ fontSize: '14px', marginBottom: '12px' }}>AI Forensic Summary</h3>
@@ -162,7 +143,7 @@ const Dashboard = () => {
                   {fraud.riskScore > 50 ? (
                     "URGENT: Financial vectors indicate significant governance or reporting risk. Industry-relative metrics suggest aggressive capitalization of expenses."
                   ) : (
-                    "Entity performance is optimized relative to sector averages. Liquidity maintenance exceeds benchmark targets by " + (ratios.liquidity.currentRatio - benchmark.currentRatio).toFixed(1) + "x."
+                    "Entity performance is optimized relative to sector averages. Liquidity maintenance exceeds benchmark targets."
                   )}
                 </div>
               </div>
